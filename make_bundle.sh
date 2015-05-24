@@ -26,8 +26,8 @@ rm -rf dist/Manami.app/Contents/Frameworks/liblzma.5.dylib
 
 echo "\nCorrigiendo estructura..."
 cp -v ./manami dist/Manami.app/Contents/MacOS/Manami
-cp -v appbundle/Info.plist dist/Manami.app/Contents/
-cp -v appbundle/app.icns dist/Manami.app/Contents/Resources/
+cp -v bundle_res/Info.plist dist/Manami.app/Contents/
+cp -v bundle_res/app.icns dist/Manami.app/Contents/Resources/
 
 echo "\nCorrigiendo enlaces del binario..."
 install_name_tool -change \

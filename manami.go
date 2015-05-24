@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"path/filepath"
 
 	"github.com/eliukblau/go-sdl2/sdl"
 	"github.com/eliukblau/go-sdl2/sdl_image"
@@ -10,122 +10,97 @@ import (
 )
 
 func main() {
-	// 0. VARIABLES GLOBALES
-	var gameloop bool
-	var window *sdl.Window
-	var renderer *sdl.Renderer
-	var texture *sdl.Texture
-	var rectangle *sdl.Rect
-	var music *mix.Music
+	// 1 - INICIAR EL JUEGO
 
-	// 1. INICIAR EL JUEGO
+	// 1.1 - SDL2
+	if code := sdl.Init(sdl.INIT_EVERYTHING); code != 0 {
+		panic(sdl.GetError())
+	}
+	defer sdl.Quit()
 
-	// 1.1 SDL2
-	/*
-		if code := sdl.Init(sdl.INIT_EVERYTHING); code == 0 {
-			win, err := sdl.CreateWindow("Go-SDL2", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, 800, 600, sdl.WINDOW_SHOWN)
-			if err != nil {
-				panic(err)
-			} else {
-				window = win
-				gameloop = true
-			}
-		} else {
-			os.Exit(code)
-		}
-	*/
+	// creamos la ventana del juego
+	window, err := sdl.CreateWindow(
+		"Manami - Simple Game Skeleton for Go/SDL2",
+		sdl.WINDOWPOS_CENTERED,
+		sdl.WINDOWPOS_CENTERED,
+		1080,
+		720,
+		sdl.WINDOWEVENT_HIDDEN|sdl.WINDOW_OPENGL)
+	if err != nil {
+		panic(err)
+	}
+	defer window.Destroy()
 
-	if code := sdl.Init(sdl.INIT_EVERYTHING); code == 0 {
-		win, rend, err := sdl.CreateWindowAndRenderer(1080, 720, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
-		if err != nil {
-			panic(err)
-		} else {
-			window = win
-			renderer = rend
-			gameloop = true
-			window.SetTitle("Manami - Simple Game Skeleton for Go/SDL2")
-		}
-	} else {
-		os.Exit(1)
+	// creamos el renderer para la ventana
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC)
+	if err != nil {
+		panic(err)
+	}
+	defer renderer.Destroy()
+
+	// 1.2 - SDL2_IMAGE
+	if code := img.Init(img.INIT_PNG); code == 0 { // ojo! cero si falla
+		panic(img.GetError())
 	}
 
-	// 1.2 SDL2_IMAGE
-	if code := img.Init(img.INIT_PNG); code != 0 {
-		tex, err := img.LoadTexture(renderer, "gfx/manami_logo.png")
-		if err != nil {
-			// luego hacer mejor con defer!
-			renderer.Destroy()
-			window.Destroy()
-			sdl.Quit()
-			panic(err)
-		} else {
-			texture = tex
-			rectangle = new(sdl.Rect)
-			rectangle.X, rectangle.Y = 0, 0
-			_, _, w, h, err := texture.Query()
-			if err != nil {
-				texture.Destroy()
-				renderer.Destroy()
-				window.Destroy()
-				sdl.Quit()
-				panic(err)
-			} else {
-				rectangle.W, rectangle.H = int32(w), int32(h)
-			}
-		}
-	} else {
-		// luego hacer mejor con defer!
-		renderer.Destroy()
-		window.Destroy()
-		sdl.Quit()
-		os.Exit(2)
+	// obtenemos la textura de la imagen de fondo
+	texture, err := img.LoadTexture(renderer, filepath.Join("gfx", "manami_logo.png"))
+	if err != nil {
+		panic(err)
+	}
+	defer texture.Destroy()
+
+	// obtenemos algunos datos de la textura
+	_, _, w, h, err := texture.Query()
+	if err != nil {
+		panic(err)
 	}
 
-	// 1.3 SDL2_MIXER
-	if code := mix.OpenAudio(44100, sdl.AUDIO_S16SYS, 2, 4096); code {
-		music = mix.LoadMUS("sfx/bg_music.ogg")
-		if music == nil || !music.Play(-1) {
-			// luego hacer mejor con defer!
-			music.Free()
-			texture.Destroy()
-			renderer.Destroy()
-			window.Destroy()
-			mix.CloseAudio()
-			sdl.Quit()
-			os.Exit(2)
-		}
-	} else {
-		// luego hacer mejor con defer!
-		texture.Destroy()
-		renderer.Destroy()
-		window.Destroy()
-		mix.CloseAudio()
-		sdl.Quit()
-		os.Exit(2)
-	}
+	// usamos los datos de la textura para crear un rectangulo
+	rectangle := new(sdl.Rect)
+	rectangle.X, rectangle.Y = 0, 0
+	rectangle.W, rectangle.H = int32(w), int32(h)
 
-	// 2. BUCLE DEL JUEGO
+	// 1.3 - SDL2_MIXER
+	if ok := mix.OpenAudio(44100, sdl.AUDIO_S16SYS, 2, 4096); !ok {
+		panic(sdl.GetError())
+	}
+	defer mix.CloseAudio()
+
+	// iniciamos la musica de fondo
+	music := mix.LoadMUS(filepath.Join("sfx", "bg_music.ogg"))
+	if music == nil || !music.Play(-1) {
+		panic(sdl.GetError())
+	}
+	defer music.Free()
+
+	// levantamos la ventana justo antes de comenzar el gameloop
+	window.Show()
+	window.Raise()
+
+	// 2 - BUCLE PRINCIPAL DEL JUEGO
+	gameloop := true
 	for gameloop {
-		// 2.1 PROCESA LA ENTRADA
-		switch event := sdl.PollEvent(); event.(type) {
-		case *sdl.QuitEvent:
+		// 2.1 - PROCESA LA ENTRADA
+		var event sdl.Event
+		for event == nil {
+			event = sdl.PollEvent()
+		}
+
+		switch event.(type) {
+		case *sdl.QuitEvent: // ojo! debe ser un puntero (*)
 			gameloop = false
 		}
 
-		// 2.2 ACTUALIZAR EL ESTADO DEL JUEGO
+		// 2.2 - ACTUALIZAR EL ESTADO DEL JUEGO
 
-		// 2.3 RENDERIZAR EL JUEGO
+		// 2.3 - RENDERIZAR EL JUEGO
 		renderer.Clear()
 		renderer.Copy(texture, nil, rectangle)
 		renderer.Present()
 		sdl.Delay(10)
 	}
 
-	// 3. FINALIZAR EL JUEGO
-	music.Free()
-	texture.Destroy()
-	renderer.Destroy()
-	window.Destroy()
-	mix.CloseAudio()
-	sdl.Quit()
+	// 3 - FINALIZAR EL JUEGO
+	// defer's de go ya se encargan de liberar y finalizar todo! ;)
 }

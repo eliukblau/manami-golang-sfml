@@ -11,7 +11,7 @@ import re
 from setuptools import setup
 
 NAME = 'Manami'
-ICON = 'appbundle/app.icns'
+ICON = 'bundle_res/app.icns'
 VERSION = '1.0.0'
 INFO = 'Manami - Simple Game Skeleton for Go/SDL2'
 COPYRIGHT = '© 2015 CreepyPanda Software'
