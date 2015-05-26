@@ -11,7 +11,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>Manami - Simple Game Skeleton for Go/SDL2</string>
 	<key>CFBundleIconFile</key>
-	<string>app.icns</string>
+	<string>App.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.creepypanda.games.manami</string>
 	<key>CFBundleInfoDictionaryVersion</key>

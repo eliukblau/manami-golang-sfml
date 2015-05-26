@@ -10,21 +10,32 @@ import (
 )
 
 func main() {
+	// 0 - CONSTANTES Y VARIABLES GLOBALES
+	const (
+		WinWidth  = 1080
+		WinHeight = 720
+	)
+
 	// 1 - INICIAR EL JUEGO
 
 	// 1.1 - SDL2
-	if code := sdl.Init(sdl.INIT_EVERYTHING); code != 0 {
-		panic(sdl.GetError())
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+		panic(err)
 	}
 	defer sdl.Quit()
+
+	// hint para el modo "fullscreen spaces" de mac
+	sdl.SetHint(sdl.HINT_VIDEO_MAC_FULLSCREEN_SPACES, "1")
+	// hint para escalar con mejores resultados visuales
+	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "best")
 
 	// creamos la ventana del juego
 	window, err := sdl.CreateWindow(
 		"Manami - Simple Game Skeleton for Go/SDL2",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
-		1080,
-		720,
+		WinWidth,
+		WinHeight,
 		sdl.WINDOWEVENT_HIDDEN|sdl.WINDOW_OPENGL)
 	if err != nil {
 		panic(err)
@@ -59,18 +70,21 @@ func main() {
 	// usamos los datos de la textura para crear un rectangulo
 	rectangle := new(sdl.Rect)
 	rectangle.X, rectangle.Y = 0, 0
-	rectangle.W, rectangle.H = int32(w), int32(h)
+	rectangle.W, rectangle.H = w, h
 
 	// 1.3 - SDL2_MIXER
-	if ok := mix.OpenAudio(44100, sdl.AUDIO_S16SYS, 2, 4096); !ok {
+	if err := mix.OpenAudio(44100, sdl.AUDIO_S16SYS, 2, 4096); err != nil {
 		panic(sdl.GetError())
 	}
 	defer mix.CloseAudio()
 
 	// iniciamos la musica de fondo
-	music := mix.LoadMUS(filepath.Join("sfx", "bg_music.ogg"))
-	if music == nil || !music.Play(-1) {
-		panic(sdl.GetError())
+	music, err := mix.LoadMUS(filepath.Join("sfx", "bg_music.ogg"))
+	if err != nil {
+		panic(err)
+	}
+	if err := music.Play(-1); err != nil {
+		panic(err)
 	}
 	defer music.Free()
 
@@ -82,14 +96,28 @@ func main() {
 	gameloop := true
 	for gameloop {
 		// 2.1 - PROCESA LA ENTRADA
-		var event sdl.Event
-		for event == nil {
-			event = sdl.PollEvent()
-		}
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch t := event.(type) { // ojo! los casos deben ser punteros (*)
+			case *sdl.QuitEvent:
+				gameloop = false
+			case *sdl.KeyUpEvent:
+				switch t.Keysym.Sym {
+				case sdl.K_f:
+					flags := window.GetFlags() ^ sdl.WINDOW_FULLSCREEN_DESKTOP
+					if err := window.SetFullscreen(flags); err == nil {
+						var displayMode sdl.DisplayMode
+						sdl.GetDisplayMode(0, 0, &displayMode)
 
-		switch event.(type) {
-		case *sdl.QuitEvent: // ojo! debe ser un puntero (*)
-			gameloop = false
+						if flags&sdl.WINDOW_FULLSCREEN_DESKTOP != 0 {
+							rectangle.W, rectangle.H = displayMode.W, displayMode.H
+						} else {
+							_, _, rectangle.W, rectangle.H, _ = texture.Query()
+						}
+					}
+				case sdl.K_ESCAPE:
+					gameloop = false
+				}
+			}
 		}
 
 		// 2.2 - ACTUALIZAR EL ESTADO DEL JUEGO
