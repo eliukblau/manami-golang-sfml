@@ -6,8 +6,10 @@ rm -rf build
 rm -rf dist
 
 echo "\nGenerando el binario..."
+cd src
 go clean
-go build -o manami
+go build -tags appbundle -o Manami
+cd ..
 
 echo "\nCreando App Bundle (py2app)..."
 touch dummy.py
@@ -18,41 +20,41 @@ echo "\nAdaptando el App Bundle..."
 rm -rf dist/Manami.app/Contents/MacOS/**
 rm -rf dist/Manami.app/Contents/Resources/**
 
-echo "\nNormalizando los Frameworks y DyLibs..."
+echo "\nNormalizando los Frameworks y dylibs..."
 rm -rf dist/Manami.app/Contents/Frameworks/Python.framework
 rm -rf dist/Manami.app/Contents/Frameworks/libcrypto.1.0.0.dylib
 rm -rf dist/Manami.app/Contents/Frameworks/libssl.1.0.0.dylib
 rm -rf dist/Manami.app/Contents/Frameworks/liblzma.5.dylib
 
 echo "\nCorrigiendo estructura..."
-cp -v ./manami dist/Manami.app/Contents/MacOS/Manami
+mv -v src/Manami dist/Manami.app/Contents/MacOS/Manami
 cp -v bundle_res/Info.plist dist/Manami.app/Contents/
 cp -v bundle_res/App.icns dist/Manami.app/Contents/Resources/
 
-echo "\nCorrigiendo enlaces del binario..."
+echo "\nCorrigiendo Frameworks y dylibs del binario..."
 install_name_tool -change \
-  @rpath/SDL2.framework/Versions/A/SDL2 \
-  @executable_path/../Frameworks/SDL2.framework/Versions/A/SDL2 \
+  /usr/local/opt/csfml/lib/libcsfml-window.2.3.dylib \
+  @executable_path/../Frameworks/libcsfml-window.2.3.dylib \
   dist/Manami.app/Contents/MacOS/Manami
 
 install_name_tool -change \
-  @rpath/SDL2_image.framework/Versions/A/SDL2_image \
-  @executable_path/../Frameworks/SDL2_image.framework/Versions/A/SDL2_image \
+  /usr/local/opt/csfml/lib/libcsfml-graphics.2.3.dylib \
+  @executable_path/../Frameworks/libcsfml-graphics.2.3.dylib \
   dist/Manami.app/Contents/MacOS/Manami
 
 install_name_tool -change \
-  @rpath/SDL2_mixer.framework/Versions/A/SDL2_mixer \
-  @executable_path/../Frameworks/SDL2_mixer.framework/Versions/A/SDL2_mixer \
+  /usr/local/opt/csfml/lib/libcsfml-audio.2.3.dylib \
+  @executable_path/../Frameworks/libcsfml-audio.2.3.dylib \
   dist/Manami.app/Contents/MacOS/Manami
 
 install_name_tool -change \
-  @rpath/SDL2_ttf.framework/Versions/A/SDL2_ttf \
-  @executable_path/../Frameworks/SDL2_ttf.framework/Versions/A/SDL2_ttf \
+  /usr/local/opt/csfml/lib/libcsfml-system.2.3.dylib \
+  @executable_path/../Frameworks/libcsfml-system.2.3.dylib \
   dist/Manami.app/Contents/MacOS/Manami
 
 echo "\nCopiando recursos..."
-cp -rv gfx dist/Manami.app/Contents/Resources/
-cp -rv sfx dist/Manami.app/Contents/Resources/
+cp -rv src/gfx dist/Manami.app/Contents/Resources/
+cp -rv src/sfx dist/Manami.app/Contents/Resources/
 
 echo "\nLimpiando resultados..."
 rm -rf build

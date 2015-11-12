@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Manami</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Manami - Simple Game Skeleton for Go/SDL2</string>
+	<string>Manami - Simple Game Skeleton for Go/SFML2</string>
 	<key>CFBundleIconFile</key>
 	<string>App.icns</string>
 	<key>CFBundleIdentifier</key>

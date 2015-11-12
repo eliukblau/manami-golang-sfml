@@ -13,7 +13,7 @@ from setuptools import setup
 NAME = 'Manami'
 ICON = 'bundle_res/App.icns'
 VERSION = '1.0.0'
-INFO = 'Manami - Simple Game Skeleton for Go/SDL2'
+INFO = 'Manami - Simple Game Skeleton for Go/SFML2'
 COPYRIGHT = '© 2015 CreepyPanda Software'
 IDENTIFIER = 'com.creepypanda.games.manami'
 
@@ -28,10 +28,10 @@ PLIST = {'CFBundleName': NAME,
 
 APP = ['dummy.py']
 
-FRAMEWORKS = ['/Library/Frameworks/SDL2.framework',
-              '/Library/Frameworks/SDL2_ttf.framework',
-              '/Library/Frameworks/SDL2_image.framework',
-              '/Library/Frameworks/SDL2_mixer.framework']
+FRAMEWORKS = ['/usr/local/opt/csfml/lib/libcsfml-window.2.3.dylib',
+              '/usr/local/opt/csfml/lib/libcsfml-graphics.2.3.dylib',
+              '/usr/local/opt/csfml/lib/libcsfml-audio.2.3.dylib',
+              '/usr/local/opt/csfml/lib/libcsfml-system.2.3.dylib']
 
 OPTIONS = {'frameworks': FRAMEWORKS,
            'iconfile': ICON,
