@@ -13,7 +13,7 @@ cd ..
 
 echo "\nCreando App Bundle (py2app)..."
 touch dummy.py
-python3 setup.py py2app --semi-standalone
+python3 setup.py py2app --semi-standalone &> /dev/null
 rm -f dummy.py
 
 echo "\nAdaptando el App Bundle..."

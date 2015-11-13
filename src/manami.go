@@ -29,10 +29,20 @@ func main() {
 	window := sf.NewRenderWindow(
 		sf.VideoMode{Width: winWidth, Height: winHeight, BitsPerPixel: 32},
 		"Manami - Simple Game Skeleton for Go/SFML2",
-		sf.StyleClose, sf.DefaultContextSettings())
+		sf.StyleTitlebar|sf.StyleClose,
+		sf.DefaultContextSettings())
 
 	// cerrado de ventana al final de la ejecucion
 	defer window.Close()
+
+	// activamos la sincronizacion vertical
+	window.SetVSyncEnabled(true)
+
+	// centramos la ventana
+	window.SetPosition(sf.Vector2i{
+		X: int((sf.GetDesktopVideoMode().Width - window.GetSize().X) / 2),
+		Y: int((sf.GetDesktopVideoMode().Height - window.GetSize().Y) / 2),
+	})
 
 	// cargamos la textura de la imagen de fondo
 	texture, err := sf.NewTextureFromFile(ResourcePath("gfx", "manami_logo.png"), nil)
